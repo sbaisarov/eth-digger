@@ -1,0 +1,5 @@
+*.txt
+.vscode
+.DS_Store
+extract_wallets/transactions.csv
+**/__pycache__

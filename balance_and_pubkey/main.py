@@ -20,20 +20,22 @@ def main():
         csv_writer = csv.DictWriter(f, fieldnames=["address", "balance", "pubkey"])
         if f.tell() == 0:
             csv_writer.writeheader()
-        
+
         write_balance_pubkey(wallets, csv_writer)
 
 
 def write_balance_pubkey(accounts, csv_writer):
-    amount = 0
     session = requests.Session()
-    while True:
-        # etherscan only allows 20 addresses per request
-        
-        balances = es.get_eth_balances(accounts[])
-        balances = {k: v for k, v in balances.items() if v > "1000"}
-        pubkey = session.get("https://etherscan.io/getRawTx?tx=0x" + tx_hash)
+    for account, tx_hash in accounts.items():
+        balance = es.get_eth_balance(account)
+        if balance > 1000:
+            print(f"Account: {account}, Balance: {balance} has more than 1000 ETH")
+        rawtx = session.get("https://etherscan.io/getRawTx?tx=0x" + tx_hash)
+        pubkey = account.recover_transaction(rawtx)
+        csv_writer.writerow({"address": account, "balance": balance, "pubkey": pubkey})
 
+
+main()
 
 # s = w3.eth.account._keys.Signature(vrs=(
 #     to_standard_v(extract_chain_id(tx.v)[1]),
