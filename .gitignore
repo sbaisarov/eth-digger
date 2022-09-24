@@ -1,5 +1,7 @@
-*.txt
+rawtx.txt
 .vscode
 .DS_Store
-extract_wallets/transactions.csv
-**/__pycache__
+__pycache__
+extract_wallets/result.csv
+cache
+
