@@ -31,6 +31,3 @@ class Reader(csv.DictReader):
         self.filename = filename
         self.file = open(filename, "r", newline="\n", encoding="utf-8")
         super().__init__(self.file)
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.file.close()

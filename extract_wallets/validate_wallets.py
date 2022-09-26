@@ -24,7 +24,7 @@ def call_proc():
                             --batch-size 5000 \
                             --start-block {Block.start_block} --end-block {Block.start_block + 10000} \
                             --transactions-output ./cache/transactions.csv \
-                            --provider-uri https://mainnet.infura.io/v3/4f3a3997062a47bd98a80f3f965a8e89"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ,
+                            --provider-uri https://mainnet.infura.io/v3/4f3a3997062a47bd98a80f3f965a8e89"                                                                                                         ,
             check=True,
             shell=True,
             capture_output=True,
@@ -49,7 +49,7 @@ def add_wallet_and_hash(transactions_csv: Reader, old_wallets: dict):
             continue
 
         old_wallets[account] = tx_hash
-    
+
     return True
 
 
@@ -67,7 +67,7 @@ def main():
     finally:
         print(f"Finished extracting valid wallets. Number of wallets: {len(wallets)}")
         Block.cache_block_number()
-        Block.cache_wallets(wallets)      
+        Block.cache_wallets(wallets)
 
     print("Wallets have been saved.")
 
@@ -81,7 +81,8 @@ def extract_old_wallets(wallets):
         print(f"Wallets with start block number {Block.start_block} and "
             f"end block number {Block.start_block + 10000} have been saved.")
         Block.start_block += 10000
-
+        Block.cache_block_number()
+        Block.cache_wallets(wallets)
 
 def extract_valid_wallets(wallets):
     while True:
@@ -99,11 +100,13 @@ def extract_valid_wallets(wallets):
                 print(f"{account} was used later than 2018: {block_datetime}")
                 wallets.pop(account)
         Block.start_block += 10000
+        Block.cache_block_number()
+        Block.cache_wallets(wallets)
 
 
 class Block(int):
     start_block = 40000
-    
+
 
     @classmethod
     def cache_block_number(cls):
