@@ -1,12 +1,10 @@
 import datetime
-import enum
 import subprocess
 import json
 import os
+import time
 
-from yaml import BlockEndToken
-
-from wrapper import Reader, ReadAndWriteException
+from wrapper import Reader
 
 files = os.listdir("./cache")
 if "block-number.json" not in files:
@@ -33,7 +31,8 @@ def call_proc():
         print(f"Error: {e.stderr}\n{e.stdout}")
         print(f"Start block number: {Block.start_block}")
         Block.cache_block_number()
-        raise e
+        time.sleep(10)
+        return call_proc()
 
 
 def add_wallet_and_hash(transactions_csv: Reader, old_wallets: dict):
@@ -63,7 +62,6 @@ def main():
     try:
         extract_old_wallets(wallets)
         print(f"Finished extracting old wallets. Number of wallets: {len(wallets)}")
-        extract_valid_wallets(wallets)
     finally:
         print(f"Finished extracting valid wallets. Number of wallets: {len(wallets)}")
         Block.cache_block_number()
@@ -80,25 +78,6 @@ def extract_old_wallets(wallets):
             return
         print(f"Wallets with start block number {Block.start_block} and "
             f"end block number {Block.start_block + 10000} have been saved.")
-        Block.start_block += 10000
-        Block.cache_block_number()
-        Block.cache_wallets(wallets)
-
-def extract_valid_wallets(wallets):
-    while True:
-        call_proc()
-        transcations_csv = Reader("./cache/transactions.csv")
-        for transaction in transcations_csv:
-            block_datetime = datetime.datetime.fromtimestamp(
-                int(transaction["block_timestamp"]))
-            if block_datetime.year < 2018:
-                print("Wallets with start block number {Block.start_block} has block datetime: {block_datetime}")
-                return
-
-            account = transaction["from_address"]
-            if account in wallets:
-                print(f"{account} was used later than 2018: {block_datetime}")
-                wallets.pop(account)
         Block.start_block += 10000
         Block.cache_block_number()
         Block.cache_wallets(wallets)

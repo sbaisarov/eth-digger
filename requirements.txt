@@ -3,3 +3,4 @@ web3
 dearpygui
 etherscan
 requests-cache==0.5.2
+ethereum-etl
