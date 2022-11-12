@@ -4,19 +4,32 @@ import csv
 import sys
 
 import etherscan
-from web3 import Web3
-from web3 import eth
+import rlp
+from web3 import Web3, HTTPProvider
 from eth_account import Account
 
 csv.field_size_limit(sys.maxsize)
 es = etherscan.Client(api_key='5NN9FSWUYFHSTBPIMCVYDXUYNS1M4RN2PQ',
                       cache_expire_after=60)
+
+from web3 import Web3, HTTPProvider
+
+
+#TODO: add logging
+
+
+w3 = Web3(
+    HTTPProvider(
+        'https://mainnet.infura.io/v3/4f3a3997062a47bd98a80f3f965a8e89'))
+transaction = w3.eth.get_transaction(
+    '0xb3ad9c26772cabb3fa7739501d47b87168de18cf2c3a21dbe12ec2283d792048')
+result = rlp.encode([
+    transaction.nonce, transaction.gasPrice, transaction.to, transaction.value, transaction.input,
+    transaction.v, transaction.r, transaction.s
+], infer_serializer=False)
+
 eth_account = Account()
-# eth_api = eth.Eth(
-#     Web3(
-#         Web3.HTTPProvider(
-#             "https://nd-430-509-576.p2pify.com/3fa3252208cd82b03008496a4fa7cd0d"
-#         )))
+public_key = Account.recover_transaction(result)
 
 
 def main():
@@ -41,9 +54,11 @@ def write_balance_pubkey(wallets, csv_writer):
         if result == False:
             continue
 
+        # tx_data =
         # response = session.get("https://etherscan.io/getRawTx?tx=" + tx_hash)
         # rawtx = re.search(r'Returned Raw Transaction Hex.*(0x.*?)\s', response.text).group(1)
-        public_key = eth_api.get_transaction(tx_hash)["publicKey"]
+        public_key = w3.get_transaction(HexBytes(tx_hash))
+        print(public_key)
 
         csv_writer.writerow({
             "address": wallet,
@@ -63,7 +78,7 @@ def test_wallet(wallet, start_block):
                                                   sort="desc",
                                                   limit=1)
     block_datetime = datetime.datetime.fromtimestamp(
-        int(transactions[0]["result"]["timestamp"]))
+        int(transactions[0]["timestamp"]))
     if block_datetime.year > 2018:
         print(f"Account: {wallet} has transactions after 2018")
         return False, 0

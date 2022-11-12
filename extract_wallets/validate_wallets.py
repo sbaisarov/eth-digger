@@ -19,10 +19,10 @@ def call_proc():
     try:
         subprocess.run(
             f"ethereumetl export_blocks_and_transactions -w 10 \
-                            --batch-size 5000 \
-                            --start-block {Block.start_block} --end-block {Block.start_block + 10000} \
+                            --batch-size 500 \
+                            --start-block {Block.start_block} --end-block {Block.start_block + 5000} \
                             --transactions-output ./cache/transactions.csv \
-                            --provider-uri https://mainnet.infura.io/v3/4f3a3997062a47bd98a80f3f965a8e89"                                                                                                         ,
+                            --provider-uri https://mainnet.infura.io/v3/2c4c3aed3c0548fcbbb3b8f8ee54a387",
             check=True,
             shell=True,
             capture_output=True,
@@ -32,7 +32,7 @@ def call_proc():
         print(f"Start block number: {Block.start_block}")
         Block.cache_block_number()
         time.sleep(10)
-        return call_proc()
+        raise e
 
 
 def add_wallet_and_hash(transactions_csv: Reader, old_wallets: dict):
@@ -61,31 +61,34 @@ def main():
         wallets: dict = json.load(f)
     try:
         extract_old_wallets(wallets)
-        print(f"Finished extracting old wallets. Number of wallets: {len(wallets)}")
     finally:
-        print(f"Finished extracting valid wallets. Number of wallets: {len(wallets)}")
+        print(
+            f"Finished extracting valid wallets. Number of wallets: {len(wallets)}"
+        )
         Block.cache_block_number()
         Block.cache_wallets(wallets)
-
-    print("Wallets have been saved.")
+        
 
 def extract_old_wallets(wallets):
     while True:
-        call_proc()
+        try:
+            call_proc()
+        except subprocess.CalledProcessError:
+            continue
         transactions_csv = Reader("./cache/transactions.csv")
         result = add_wallet_and_hash(transactions_csv, wallets)
         if result == False:
+            print("Finished extracting old wallets until 2018.")
             return
         print(f"Wallets with start block number {Block.start_block} and "
-            f"end block number {Block.start_block + 10000} have been saved.")
-        Block.start_block += 10000
+              f"end block number {Block.start_block + 5000} have been saved.")
+        Block.start_block += 5000
         Block.cache_block_number()
         Block.cache_wallets(wallets)
 
 
 class Block(int):
     start_block = 40000
-
 
     @classmethod
     def cache_block_number(cls):
