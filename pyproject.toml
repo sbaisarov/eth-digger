@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "eth-digger"
+version = "0.1.0"
+description = ""
+repository = "https://github.com/sbaysarov/eth-digger"
+authors = ["Shamanovski <spike2@list.ru>"]
+readme = "README.md"
+packages = [
+	{include = "extract_wallets", from="src"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+eth-account = {path="src/eth_account", develop=true}
+dearpygui = "^1.8.0"
+etherscan = "^0.3.0"
+requests-cache = "0.5.2"
+ethereum-etl = "^2.1.1"
+web3 = "^5.31.1"
+
+[tool.poetry.group.dev.dependencies]
+autopep8 = "^2.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

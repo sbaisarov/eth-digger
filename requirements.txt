@@ -1,4 +1,4 @@
-eth-account
+eth-account==0.5.9
 web3
 dearpygui
 etherscan

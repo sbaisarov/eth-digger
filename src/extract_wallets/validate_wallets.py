@@ -27,11 +27,11 @@ def call_proc():
             shell=True,
             capture_output=True,
         )
+        time.sleep(5)
     except subprocess.CalledProcessError as e:
         print(f"Error: {e.stderr}\n{e.stdout}")
         print(f"Start block number: {Block.start_block}")
         Block.cache_block_number()
-        time.sleep(10)
         raise e
 
 
@@ -46,7 +46,9 @@ def add_wallet_and_hash(transactions_csv: Reader, old_wallets: dict):
         tx_hash = transaction["hash"]
         if account in old_wallets:
             continue
-
+        
+        # seems like transaction hash belongs to the last transaction of the account
+        # at the time the request was made
         old_wallets[account] = tx_hash
 
     return True
@@ -71,10 +73,7 @@ def main():
 
 def extract_old_wallets(wallets):
     while True:
-        try:
-            call_proc()
-        except subprocess.CalledProcessError:
-            continue
+        call_proc()
         transactions_csv = Reader("./cache/transactions.csv")
         result = add_wallet_and_hash(transactions_csv, wallets)
         if result == False:
@@ -100,5 +99,5 @@ class Block(int):
         with open("./cache/wallets.json", "w") as f:
             json.dump(wallets, f)
 
-
-main()
+if __name__ == '__main__':
+    main()
