@@ -1,8 +1,8 @@
 # eth-digger
 
 * Поменять директорию `cd $PATH/eth-proj` либо открыть в visual studio code
-* Ввести `pip install -r requirements.txt` чтобы загрузить все зависимости
-* Запустить сначала validate_wallets.py `python3 validate_wallets.py`, затем `python3 main.py` когда завершится validate_wallets.py процесс
+* Установить poetry `brew install poetry`
+* В корневой папке проекта ввести `poetry install` для установки всех пакетов
 
 ### Программа состоит из двух модулей:
 
