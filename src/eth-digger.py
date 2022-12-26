@@ -21,7 +21,7 @@ es = etherscan.Client(api_key=f'{ETHERSCAN_API_KEY}',
 
 w3 = Web3(
     HTTPProvider(
-        f"https://mainnet.infura.io/v3/{INFURA_API_KEY}")
+        f"https://mainnet.infura.io/v3/{INFURA_API_KEY}"))
 
 eth_account = Account()
 
