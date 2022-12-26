@@ -10,8 +10,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-eth-account = {path="src/eth_account", develop=true}
+python = "^3.10"
 dearpygui = "^1.8.0"
 etherscan = "^0.3.0"
 requests-cache = "0.5.2"

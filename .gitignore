@@ -2,7 +2,8 @@
 .vscode
 .DS_Store
 __pycache__
-extract_wallets/result.csv
-cache
-*.csv
+*.swp
 dist
+src/storage/wallets_txs.json
+src/storage/.swp
+result.csv
