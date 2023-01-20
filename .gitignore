@@ -7,3 +7,4 @@ dist
 src/storage/wallets_txs.json
 src/storage/.swp
 result.csv
+.env

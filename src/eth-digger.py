@@ -1,26 +1,30 @@
-import json
-import csv
-import sys
 import logging
-
-from csv_wrapper import Reader, Writer, ReadAndWriteException
+import os
 
 from hexbytes import HexBytes
-import jsonlines
+import dotenv
 from eth_account import Account
-import etherscan
 import rlp
 from web3 import Web3, HTTPProvider
 
-INFURA_API_KEY = "2c4c3aed3c0548fcbbb3b8f8ee54a387"
-ETHERSCAN_API_KEY = ""
+from fileio import csv
+from fileio import jsonl
+from fileio.exceptions import ReadAndWriteException
 
 
-csv.field_size_limit(sys.maxsize)  # curent field size limit is not enough for some rows
-es = etherscan.Client(api_key=f"{ETHERSCAN_API_KEY}", cache_expire_after=60)
+dotenv.load_dotenv()
+input_file = os.getenv("INPUT_FILE")
+if input_file == None:
+    raise ReadAndWriteException("INPUT_FILE is not defined")
 
-w3 = Web3(HTTPProvider(f"https://mainnet.infura.io/v3/{INFURA_API_KEY}"))
+output_file = os.getenv("OUTPUT_FILE")
+if output_file is None:
+    output_file = "result.csv"
 
+INPUT_FILE = os.path.join(os.path.dirname(__file__), f"fileio/data/{input_file}")
+OUTPUT_FILE = os.path.join(os.path.dirname(__file__), f"fileio/data/{output_file}")
+
+w3 = Web3(HTTPProvider(f"https://mainnet.infura.io/v3/{os.getenv('INFURA_API_KEY')}"))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,37 +35,34 @@ logging.info("HTTP provider - Infura")
 
 
 def main():
-    # wallet_balance = Reader(
-    #     "src/storage/wallet_balance.csv", ["wallet", "transaction_hash", "EthBalance"]
-    # )
-    # logging.info(f"wallets loaded: {len(wallet_balance)} wallets")
+    if INPUT_FILE.endswith(".csv"):
+        reader = csv.Reader(INPUT_FILE, ["address", "hash", "EthBalance"])
+    elif INPUT_FILE.endswith(".jsonl"):
+        reader = jsonl.Reader(INPUT_FILE)
+        # result = jsonl.Writer(OUTPUT_FILE)  # not implemented yet
+    else:
+        raise ReadAndWriteException("File format not supported")
 
-    # result = Writer("result.csv", ["wallet", "EthBalance", "pubkey"])
-    # try:
-    #     eval_pubkey(wallet_balance, result)
-    # except ReadAndWriteException:
-    #     print(ReadAndWriteException)
-    # finally:
-    #     wallet_balance.close()
-    #     result.close()
+    result = csv.Writer(OUTPUT_FILE, ["address", "EthBalance", "pubkey"])
+    logging.info(f"wallets loaded: {len(reader)} wallets")
 
-    with open("src/resources/wallets-2018-2023.json", "r") as f:
-        wallets = jsonlines.Reader(f)
-        result = Writer("result.csv", ["wallet", "EthBalance", "pubkey"])
-        eval_pubkey(wallets, result)
+    try:
+        eval_pubkey(reader, result)
+    except ReadAndWriteException as e:
+        print(e)
+    finally:
+        reader.close()
+        result.close()
 
 
-def eval_pubkey(wallet_balance, result):
-    # with open("src/extract_wallets/cache/block-number.json", "r") as f:
-    #     start_block = json.load(f)  # last block number of 2018
-
+def eval_pubkey(wallet_balance, result: csv.Writer):
+    already_processed = result.to_address_list("address")
     for row in wallet_balance:
-        wallet = row["address"]  # row["wallet"]
-        tx_hash = row["hash"]  # row["transaction_hash"]
-        balance = row["EthBalance"]  # row["EthBalance"]
-        # if result == False:
-        #     logging.info("Wallet: {} is deleted".format(wallet))
-        #     continue
+        wallet = row["address"]
+        if wallet in already_processed:
+            continue
+        tx_hash = row["hash"]  # last transacton hash
+        balance = row["EthBalance"]  # current balance
 
         transaction = w3.eth.get_transaction(tx_hash)
         receipent = transaction.to
@@ -82,9 +83,12 @@ def eval_pubkey(wallet_balance, result):
         )
         public_key = Account.recover_transaction(rawTx.hex())
 
-        result.writerow({"wallet": wallet, "EthBalance": balance, "pubkey": public_key})
+        result.writerow(
+            {"address": wallet, "EthBalance": balance, "pubkey": public_key}
+        )
+        # the public key generated for this address(wallet)
         logging.info(
-            f"Row added: 'address': {wallet}, 'balance': {balance}, 'pubkey': {public_key}"
+            f"Row added: 'address': {wallet}, 'balance': {balance}, 'Public key': {public_key}"
         )
 
 

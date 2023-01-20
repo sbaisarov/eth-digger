@@ -1,0 +1,2 @@
+class ReadAndWriteException(Exception):
+    pass
