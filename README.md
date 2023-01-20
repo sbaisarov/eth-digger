@@ -1,6 +1,6 @@
 # Ethereum Public Key Extractor
 ## Introduction
-This project is related to software engineering and utilizes Python and Poetry for managing the environment. The project uses BigQuery SQL queries to extract and load data from the Ethereum public dataset on Google Cloud. The goal of the project is to obtain the public keys of Ethereum wallets by querying a large number of transactions to get the balances of wallets that have values greater than a specified amount.
+This project is related to software engineering and utilizes Python and Poetry for managing the environment. The project uses BigQuery SQL queries to extract and load data from the Ethereum public dataset on Google Cloud. The goal of the project is to obtain the public keys of Ethereum wallets that have values greater than a specified amount by querying a large number of transactions.
 
 Additionally, the project extracts hash values from transactions for each wallet and saves the data in a jsonl file. These hash values are used to retrieve full transaction data from Infura, which is then used to convert structured transaction data into raw transaction data. The raw transaction data is then used to obtain the public keys for each wallet.
 
